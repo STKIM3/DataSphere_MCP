@@ -1,0 +1,35 @@
+import re
+from typing import Any
+
+from .exceptions import PolicyViolationError
+from .models.common import Environment, Risk
+
+
+def authorize(environment: Environment, risk: Risk = Risk.READ) -> None:
+    Environment(environment)
+    if risk != Risk.READ:
+        raise PolicyViolationError()
+
+
+class SecretRedactor:
+    def __init__(self):
+        self._values: set[str] = set()
+
+    def add(self, value: str) -> None:
+        if value:
+            self._values.add(value)
+
+    def clean(self, value: Any) -> Any:
+        if isinstance(value, dict):
+            return {
+                self.clean(str(k)): "[REDACTED]" if re.search(
+                    r"(?i)(access.?token|refresh.?token|client.?secret|password|authorization)", str(k)
+                ) else self.clean(v) for k, v in value.items()
+            }
+        if isinstance(value, list):
+            return [self.clean(v) for v in value]
+        if isinstance(value, str):
+            for secret in sorted(self._values, key=len, reverse=True):
+                value = value.replace(secret, "[REDACTED]")
+            return re.sub(r"(?i)\bBearer\s+[^\s\"']+", "Bearer [REDACTED]", value)
+        return value

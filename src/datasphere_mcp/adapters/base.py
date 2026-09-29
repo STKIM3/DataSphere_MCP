@@ -1,0 +1,9 @@
+from typing import Any, Protocol
+
+from ..models.objects import ObjectListRequest, ObjectRequest
+
+
+class ReadAdapter(Protocol):
+    async def list_spaces(self) -> Any: ...
+    async def list_objects(self, request: ObjectListRequest) -> Any: ...
+    async def read_object(self, request: ObjectRequest) -> dict[str, Any]: ...

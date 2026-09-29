@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "datasphere-mcp"
+version = "0.1.0"
+description = "Read-only, typed SAP Datasphere MCP server"
+requires-python = ">=3.12"
+dependencies = [
+  "fastmcp==4.0.10",
+  "pydantic>=2.12,<3",
+  "pydantic-settings>=2.12,<3",
+  "httpx>=0.28,<0.29",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=9,<10", "pytest-asyncio>=1,<2"]
+
+[project.scripts]
+datasphere-mcp = "datasphere_mcp.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = ["integration: opt-in, real DEV tenant reads only"]
